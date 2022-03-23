@@ -185,7 +185,7 @@ class wvmCreate(wvmConnect):
         console_pass="random",
         mac=None,
         qemu_ga=True,
-        vxlan=False
+        vxlan=False,
     ):
         """
         Create VM function
@@ -233,7 +233,7 @@ class wvmCreate(wvmConnect):
                 xml += """<apic/>"""
             if "pae" in caps["features"]:
                 xml += """<pae/>"""
-            if firmware.get("secure", "no") == "yes":
+            if firmware is not None and firmware.get("secure", "no") == "yes":
                 xml += """<smm state="on"/>"""
             xml += """</features>"""
 
@@ -322,7 +322,7 @@ class wvmCreate(wvmConnect):
                           <source file = '' />
                           <readonly/>"""
             if "ide" in dom_caps["disk_bus"]:
-                xml += """<target dev='hd%s' bus='%s'/>""" % (hd_disk_letters.pop(0), "ide")
+                xml += """<target dev='hd%s' bus='%s'/>""" % (hd_disk_letters.pop(0), "sata")
             elif "sata" in dom_caps["disk_bus"]:
                 xml += """<target dev='sd%s' bus='%s'/>""" % (sd_disk_letters.pop(0), "sata")
             elif "scsi" in dom_caps["disk_bus"]:
@@ -333,8 +333,7 @@ class wvmCreate(wvmConnect):
 
         if mac:
             macs = mac.split(',')
-            
-            
+
         if vxlan :
             for idx, net, target in enumerate(networks.split(",")):
                 xml += """<interface type='bridge'>"""
@@ -360,7 +359,12 @@ class wvmCreate(wvmConnect):
                     xml += """<model type='virtio'/>"""
                 xml += """</interface>"""
 
-                
+        if console_pass == "random":
+            console_pass = "passwd='" + util.randomPasswd() + "'"
+        else:
+            if not console_pass == "":
+                console_pass = "passwd='" + console_pass + "'"
+
         if "usb" in dom_caps["disk_bus"]:
             xml += """<input type='mouse' bus='{}'/>""".format("virtio" if virtio else "usb")
             xml += """<input type='keyboard' bus='{}'/>""".format("virtio" if virtio else "usb")
