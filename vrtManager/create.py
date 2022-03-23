@@ -185,6 +185,7 @@ class wvmCreate(wvmConnect):
         console_pass="random",
         mac=None,
         qemu_ga=True,
+        vxlan=False
     ):
         """
         Create VM function
@@ -332,23 +333,34 @@ class wvmCreate(wvmConnect):
 
         if mac:
             macs = mac.split(',')
-        for idx, net in enumerate(networks.split(",")):
-            xml += """<interface type='network'>"""
-            if mac:
-                xml += f"""<mac address='{macs[idx]}'/>"""
-            xml += f"""<source network='{net}'/>"""
-            if nwfilter:
-                xml += f"""<filterref filter='{nwfilter}'/>"""
-            if virtio:
-                xml += """<model type='virtio'/>"""
-            xml += """</interface>"""
+            
+            
+        if vxlan :
+            for idx, net, target in enumerate(networks.split(",")):
+                xml += """<interface type='bridge'>"""
+                if mac:
+                    xml += f"""<mac address='{macs[idx]}'/>"""
+                xml += f"""<source network='{net}'/>"""
+                xml += f"""<target dev='{target}'/>"""
+                if nwfilter:
+                    xml += f"""<filterref filter='{nwfilter}'/>"""
+                if virtio:
+                    xml += """<model type='virtio'/>"""
+                xml += f"""<alias name='net{idx}'/>"""
+                xml += """</interface>"""
+        else :
+            for idx, net in enumerate(networks.split(",")):
+                xml += """<interface type='network'>"""
+                if mac:
+                    xml += f"""<mac address='{macs[idx]}'/>"""
+                xml += f"""<source network='{net}'/>"""
+                if nwfilter:
+                    xml += f"""<filterref filter='{nwfilter}'/>"""
+                if virtio:
+                    xml += """<model type='virtio'/>"""
+                xml += """</interface>"""
 
-        if console_pass == "random":
-            console_pass = "passwd='" + util.randomPasswd() + "'"
-        else:
-            if not console_pass == "":
-                console_pass = "passwd='" + console_pass + "'"
-
+                
         if "usb" in dom_caps["disk_bus"]:
             xml += """<input type='mouse' bus='{}'/>""".format("virtio" if virtio else "usb")
             xml += """<input type='keyboard' bus='{}'/>""".format("virtio" if virtio else "usb")
