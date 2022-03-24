@@ -334,19 +334,21 @@ class wvmCreate(wvmConnect):
         if mac:
             macs = mac.split(',')
 
-        if vxlan :
-            for idx, net, target in enumerate(networks.split(",")):
-                xml += """<interface type='bridge'>"""
-                if mac:
-                    xml += f"""<mac address='{macs[idx]}'/>"""
-                xml += f"""<source network='{net}'/>"""
-                xml += f"""<target dev='{target}'/>"""
-                if nwfilter:
-                    xml += f"""<filterref filter='{nwfilter}'/>"""
-                if virtio:
-                    xml += """<model type='virtio'/>"""
-                xml += f"""<alias name='net{idx}'/>"""
-                xml += """</interface>"""
+        arr = networks.split(",")
+        print(arr)
+        idx = int(arr[0])
+        net = arr[1]
+        if vxlan:
+            xml += """<interface type='bridge'>"""
+            if mac:
+                xml += f"""<mac address='{macs[idx]}'/>"""
+            xml += f"""<source bridge='{net}'/>"""
+            if nwfilter:
+                xml += f"""<filterref filter='{nwfilter}'/>"""
+            if virtio:
+                xml += """<model type='virtio'/>"""
+            xml += f"""<alias name='net{idx}'/>"""
+            xml += """</interface>"""
         else :
             for idx, net in enumerate(networks.split(",")):
                 xml += """<interface type='network'>"""
