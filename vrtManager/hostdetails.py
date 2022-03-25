@@ -53,6 +53,12 @@ class wvmHostDetails(wvmConnect):
             return {"usage": None}
         return {"usage": diff_usage}
 
+    def get_node_uuid(self):
+        sys_info = self.wvm.getSysinfo()
+        uuid = get_xml_path(sys_info, path="//entry[@name='uuid']")
+        return uuid
+
+
     def get_node_info(self):
         """
         Function return host server information: hostname, cpu, memory, ...
@@ -63,5 +69,5 @@ class wvmHostDetails(wvmConnect):
         info.append(self.wvm.getInfo()[1] * 1048576)  # memory
         info.append(self.wvm.getInfo()[2])  # cpu core count
         info.append(get_xml_path(self.wvm.getSysinfo(0), func=cpu_version))  # cpu version
-        info.append(self.wvm.getURI())  # uri
+        info.append(self.wvm.getURI())
         return info
