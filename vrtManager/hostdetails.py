@@ -54,8 +54,8 @@ class wvmHostDetails(wvmConnect):
         return {"usage": diff_usage}
 
     def get_node_uuid(self):
-        sys_info = self.wvm.getSysinfo()
-        uuid = get_xml_path(sys_info, path="//entry[@name='uuid']")
+        sys_info = self.get_cap_xml()
+        uuid = get_xml_path(sys_info, path="//host/uuid")
         return uuid
 
 
